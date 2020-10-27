@@ -1,60 +1,73 @@
 const searchField = document.getElementById('searchbox');
 const submitButton = document.getElementById('submitbutton');
-const form = document.getElementById('countrysearch')
 
 const countryInfoContainer = document.getElementById('countryinfo-container')
 
-submitButton.addEventListener('click', parseCountryInfo);
+submitButton.addEventListener('click', parseResult);
 searchField.addEventListener('keydown', (e) => {
-    if (e.keyCode === 13){
+    if (e.keyCode === 13) {
         e.preventDefault();
-        parseCountryInfo();
+        parseResult();
     }
-} )
+})
 
 //searchField.addEventListener('input', parseCountryInfo);
 
-async function parseCountryInfo() {
-    country = await getCountry(searchField.value);
-    console.log(country);
+async function parseResult() {
+    const resultDiv = document.createElement('div');
+    resultDiv.setAttribute('id', 'searchresult');
+
+    const countryList = await getCountries(searchField.value);
+    if(countryList && countryList.length !== 0){
+        countryList.map((country) => {
+            const currentCountryDiv = getCountryInfoDiv(country);
+            resultDiv.appendChild(currentCountryDiv);
+        })
+    }else{
+        noresultDiv = document.createElement('div');
+        noresultDiv.textContent = "No such country found!";
+        resultDiv.appendChild(noresultDiv);
+    }
+
+    try {
+        const oldResult = document.getElementById('searchresult');
+        countryInfoContainer.removeChild(oldResult);
+    } catch(e){
+
+    } finally {
+        countryInfoContainer.appendChild(resultDiv);
+    }
+
+}
+
+function getCountryInfoDiv(country) {
+
     const countryDescription = buildCountryDescription(country);
-    console.log(countryDescription);
     const capitalDescription = buildCapitalDescription(country);
-    console.log(capitalDescription);
     const currencyDescription = buildCurrencyDescription(country);
-    console.log(currencyDescription);
     const languageDescription = buildLanguageDescription(country);
-    console.log(languageDescription);
     const flagUrl = country.flag;
 
     //build country information div
     const countryInfoDiv = document.createElement('div');
-    countryInfoDiv.setAttribute('id' , 'countryinfo')
-    countryInfoDiv.setAttribute('class','country');
+    countryInfoDiv.setAttribute('class', 'country');
     const flagElement = document.createElement('img');
-    flagElement.setAttribute('src',flagUrl);
+    flagElement.setAttribute('src', flagUrl);
     flagElement.setAttribute('width', '400px');
     countryInfoDiv.appendChild(flagElement);
     const countryText = document.createElement('div');
     countryText.textContent = countryDescription + " " + capitalDescription + " " + currencyDescription + " " + languageDescription;
     countryInfoDiv.appendChild(countryText);
 
-    try{
-        const oldcountryelement = document.getElementById('countryinfo')
-        countryInfoContainer.removeChild(oldcountryelement);
-    } catch (e){
-        console.log("De catch wordt uitgevoerd")
-    } finally {
-        countryInfoContainer.appendChild(countryInfoDiv);
-    }
+    return countryInfoDiv;
 }
 
-async function getCountry(countryName) {
+async function getCountries(countryName) {
     try {
-        const country = await axios.get('https://restcountries.eu/rest/v2/name/' + countryName);
-        return country.data[0];
+        const countries = await axios.get('https://restcountries.eu/rest/v2/name/' + countryName);
+        console.log(countries)
+        return countries.data;
     } catch (e) {
-        console.error(e);
     }
 
 }
@@ -88,10 +101,10 @@ function buildLanguageDescription(country) {
     let output = "They speak "
     languages.map((language, i) => {
         if (i === 0) {
-            output += language.name;
+            output += language.name + ".";
         } else if (i < languages.length - 1) {
             output += ", " + language.name;
-        } else{
+        } else {
             output += " and " + language.name;
         }
     })
