@@ -6,7 +6,7 @@ const countryInfoContainer = document.getElementById('countryinfo-container')
 submitButton.addEventListener('click', parseResult);
 searchField.addEventListener('keydown', (e) => {
     if (e.keyCode === 13) {
-        e.preventDefault();
+        //e.preventDefault();
         parseResult();
     }
 })
